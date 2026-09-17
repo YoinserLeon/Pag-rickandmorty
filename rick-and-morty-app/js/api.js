@@ -1,27 +1,18 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Verificar si hay una sesión activa en localStorage
-  const sesionActiva = JSON.parse(localStorage.getItem('sesionActiva'));
+// Módulo de integración con la API REST pública de Rick and Morty
+const API_URL = 'https://rickandmortyapi.com/api/character';
 
-  // 2. Proteger la ruta: si no hay sesión, expulsar al usuario al login
-  if (!sesionActiva) {
-    window.location.href = 'login.html';
-    return; // Detiene la ejecución del resto del código
+/**
+ * Realiza la petición para obtener los primeros 20 personajes
+ * @returns {Promise<Array>} Lista de personajes o arreglo vacío en caso de error
+ */
+export async function obtenerPersonajes() {
+  try {
+    const respuesta = await fetch(API_URL);
+    if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
+    const datos = await respuesta.json();
+    return datos.results;
+  } catch (error) {
+    console.error('Error al consumir la API:', error);
+    return [];
   }
-
-  // 3. Mostrar el nombre del usuario en la barra de navegación
-  const userGreeting = document.getElementById('userGreeting');
-  if (userGreeting) {
-    userGreeting.textContent = `Hola, ${sesionActiva.nombre}`;
-  }
-
-  // 4. Lógica para cerrar sesión
-  const btnLogout = document.getElementById('btnLogout');
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      // Eliminar solo la sesión activa (mantiene a los usuarios registrados)
-      localStorage.removeItem('sesionActiva');
-      // Redirigir al login
-      window.location.href = 'login.html';
-    });
-  }
-});
+}

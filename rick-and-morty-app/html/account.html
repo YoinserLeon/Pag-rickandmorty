@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Cuenta - Rick and Morty App</title>
+
+  <!-- Carga de Tailwind CSS para estilos globales -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Configuración de Tailwind para soporte de modo oscuro por clase -->
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+
+  <!-- Aplicar tema oscuro guardado en localStorage antes de renderizar (evita parpadeos) -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- Carga de la librería de íconos FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Protección de ruta: Redirige al login si no hay sesión activa -->
+  <script>
+    const usuarioLogueado = localStorage.getItem('usuarioLogueado');
+    if (!usuarioLogueado) {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
+
+  <!-- Barra de Navegación con enlaces principales -->
+  <header class="bg-white dark:bg-gray-800 shadow-md px-6 py-4 flex justify-between items-center transition-colors duration-300">
+    <h1 class="text-xl font-bold text-gray-800 dark:text-white">Rick and Morty API</h1>
+    <div class="flex items-center space-x-4">
+      <!-- Botón para alternar entre Modo Oscuro / Claro -->
+      <button id="themeToggle" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg transition cursor-pointer" title="Cambiar tema">
+        <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+      </button>
+
+      <!-- Enlace para volver a la página de inicio -->
+      <a href="index.html" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center gap-1">
+        <i class="fa-solid fa-house"></i> Volver al inicio
+      </a>
+
+      <!-- Enlace a la sección de favoritos -->
+      <a href="favorites.html" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center gap-1">
+        <i class="fa-solid fa-heart text-red-500"></i> Favoritos
+      </a>
+
+      <!-- Botón para cerrar la sesión actual -->
+      <button id="btnLogout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1 shadow-sm">
+        <i class="fa-solid fa-right-from-bracket"></i> Salir
+      </button>
+    </div>
+  </header>
+
+  <!-- Contenido Principal: Formulario de Configuración de Cuenta -->
+  <main class="max-w-xl mx-auto px-4 py-12 w-full">
+    <div class="bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden p-8 transition-colors duration-300">
+      
+      <!-- Encabezado de la tarjeta con icono de usuario -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-full text-3xl mb-4 shadow-inner">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <h2 class="text-2xl font-black text-gray-800 dark:text-white">Configuración de la Cuenta</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Actualiza tu información personal</p>
+      </div>
+
+      <!-- Contenedor dinámico de alerta para notificaciones -->
+      <div id="mensajeAlerta" class="hidden mb-6 p-4 rounded-lg text-sm font-semibold text-center"></div>
+
+      <!-- Formulario para modificar datos de usuario -->
+      <form id="accountForm" class="space-y-5">
+        <!-- Campo: Correo Electrónico (Deshabilitado) -->
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Correo Electrónico (No modificable)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+              <i class="fa-solid fa-envelope"></i>
+            </span>
+            <input type="email" id="emailInput" disabled class="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 cursor-not-allowed font-medium">
+          </div>
+        </div>
+
+        <!-- Campo: Nombre / Usuario -->
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Nombre / Usuario</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+              <i class="fa-solid fa-user-pen"></i>
+            </span>
+            <input type="text" id="nombreInput" required class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-800 dark:text-gray-100">
+          </div>
+        </div>
+
+        <!-- Campo: Nueva Contraseña (Opcional) -->
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Nueva Contraseña (Opcional)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="passwordInput" placeholder="Dejar en blanco para mantener la actual" class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-800 dark:text-gray-100">
+          </div>
+        </div>
+
+        <!-- Botón para guardar los cambios -->
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200 shadow-md cursor-pointer flex items-center justify-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Pie de página -->
+  <footer class="text-center py-6 text-gray-500 dark:text-gray-400 text-sm">
+    Rick and Morty App &copy; 2026
+  </footer>
+
+  <!-- Script para la conmutación y persistencia del tema (Oscuro/Claro) -->
+  <script>
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    
+    // Sincronizar el icono inicial del tema
+    if (document.documentElement.classList.contains('dark')) {
+      themeIcon.className = 'fa-solid fa-sun text-lg text-yellow-400';
+    } else {
+      themeIcon.className = 'fa-solid fa-moon text-lg text-gray-700';
+    }
+
+    // Evento de clic para alternar el tema y guardarlo en localStorage
+    themeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      themeIcon.className = isDark ? 'fa-solid fa-sun text-lg text-yellow-400' : 'fa-solid fa-moon text-lg text-gray-700';
+    });
+  </script>
+
+  <!-- Script Módulo: Carga datos de usuario, actualiza en localStorage y maneja el logout -->
+  <script type="module">
+    import { cerrarSesion } from '../js/auth.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Evento de cierre de sesión
+      const btnLogout = document.getElementById('btnLogout');
+      if (btnLogout) {
+        btnLogout.addEventListener('click', (e) => {
+          e.preventDefault();
+          cerrarSesion();
+        });
+      }
+
+      // Obtener el usuario activo de localStorage
+      const usuarioStr = localStorage.getItem('usuarioLogueado');
+      if (!usuarioStr) return;
+
+      const usuario = JSON.parse(usuarioStr);
+      const emailInput = document.getElementById('emailInput');
+      const nombreInput = document.getElementById('nombreInput');
+      const passwordInput = document.getElementById('passwordInput');
+      const accountForm = document.getElementById('accountForm');
+      const mensajeAlerta = document.getElementById('mensajeAlerta');
+
+      // Cargar datos actuales en los campos
+      emailInput.value = usuario.email || '';
+      nombreInput.value = usuario.nombre || usuario.name || '';
+
+      // Procesar guardado de cambios
+      accountForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Actualizar datos del objeto de usuario
+        usuario.nombre = nombreInput.value.trim();
+        if (passwordInput.value.trim() !== '') {
+          usuario.password = passwordInput.value.trim();
+        }
+
+        // Guardar cambios en la sesión activa
+        localStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
+
+        // Actualizar datos en la lista global de usuarios registrados
+        let usuariosRegistrados = JSON.parse(localStorage.getItem('usuarios')) || [];
+        const index = usuariosRegistrados.findIndex(u => u.email === usuario.email);
+        if (index !== -1) {
+          usuariosRegistrados[index] = usuario;
+          localStorage.setItem('usuarios', JSON.stringify(usuariosRegistrados));
+        }
+
+        // Mostrar notificación de éxito
+        mensajeAlerta.textContent = '¡Información actualizada con éxito!';
+        mensajeAlerta.className = 'mb-6 p-4 rounded-lg text-sm font-semibold text-center bg-green-100 text-green-700 border border-green-200';
+        mensajeAlerta.classList.remove('hidden');
+
+        passwordInput.value = '';
+
+        // Ocultar alerta después de 4 segundos
+        setTimeout(() => {
+          mensajeAlerta.classList.add('hidden');
+        }, 4000);
+      });
+    });
+  </script>
+</body>
+</html>
